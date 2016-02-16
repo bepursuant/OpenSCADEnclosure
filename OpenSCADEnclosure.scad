@@ -2,6 +2,7 @@
 // mounting holes, and ports below to get a perfect custom 3d
 // printable enclosure. Easy peasy.
 
+use <lib/PCB.scad>          //pcb model
 use <lib/CubeX.scad>        //cubes with rounded corners
 use <lib/RoundedCube.scad>  //cubes with rounded edges
 use <lib/FlatBox.scad>      //enclosure with top and bottom sections
@@ -12,77 +13,90 @@ slop = 0.3;			        //spacing between moving sections
 
 
 // ====== DEFINE THE BOARD BELOW ====== //
-boardL = 32;
-boardW = 70;
+boardL = 52;// + 1 + 17;
+boardW = 71;
 boardH = 1.75;  //thickness of the PCB in mm
-boardTop = 14;  //height of elements on top of PCB in mm
-boardBottom = 3;//height of elements on the bottom of PCB in mm
 
-// Locate each mounting hole in the board to auto create holes and standoffs
-// on the bottom section of the enclosure. Use the syntax for each hole
-// of = [distance along board X, distance along board Y, [TODO: ID]]
-mountingHoleID = 2;
-mountingHoles =[[2.75,  2.75],
-                [2.75,  28.5],
-                [67,    2.75],
-                [67,    28.5]];
+boardTop = 18;  //height of elements on top of PCB in mm
+boardBottom = 3.5;//height of elements on the bottom of PCB in mm
+
+boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, diameter]
+                     [28.5, 3,      2],
+                     [35.5, 1.5,    2],
+                     [49,   1.5,    2],
+                     [3,    67,     2],    //top row
+                     [28.5, 67,     2],
+                     [35.5, 68.5,   2],
+                     [49,   68.5,   2]];
+
 
 // ====== SETUP ENCLOSURE PARAMETERS BELOW ====== //
-enclosureInsideMargin = 2; //distance between all board elements and enclosure walls in mm
-enclosureWallThickness = 1.5;
+enclosureMargin = 2; //distance between all board elements and enclosure walls in mm
+enclosureThickness = 1.5;
+enclosureRadius = 5;
+enclosureOverlap = 2;   //mm of overlap on top and bottom
 
-/*enclosureBottomOutsideL = boardL + (2*insideMargin) + (2*wallThickness);
-enclosureBottomOutsideW = boardW + (2*insideMargin) + (2*wallThickness);
-enclosureBottomOutsideH = boardBottom + boardH + boardTop + insideMargin + wallThickness;
-*/
+standoffs = boardMountingHoles;
+standoffH = enclosureMargin + boardBottom;
 
-// Draw the board with given parameters
+// ************ CALCULATIONS BELOW **************************
+bottomX = 0;
+bottomY = 0;
+bottomZ = 0;
+
+boardX = bottomX + enclosureThickness + enclosureMargin;
+boardY = bottomY + enclosureThickness + enclosureMargin;
+boardZ = bottomZ + enclosureThickness + enclosureMargin;
+
+enclosureL = boardL + (2*enclosureMargin) + (2*enclosureThickness);
+enclosureW = boardW + (2*enclosureMargin) + (2*enclosureThickness);
+enclosureH = boardBottom + boardH + boardTop + (2*enclosureMargin) + (2*enclosureThickness);
+
+topX = bottomX;
+topY = bottomY;
+topZ = 2*(bottomZ + enclosureH/2)-enclosureOverlap;
+
+module _board(boardOnly=false){
+    PCB(boardL, boardW, boardH, boardBottom, boardTop, boardOnly);
+}
+
 module board(boardOnly=false){
-    if(!boardOnly){
-        //bottom
-        color("GREY", 0.5){
-            cube(size=[boardW, boardL, boardBottom]);
-        }
-    }
+    translate([boardX, boardY, boardZ])
+        _board(boardOnly);      
+}
 
-    //pcb
-    color("GREEN"){ 
-        translate([0, 0, boardBottom]){
-            difference(){
-                cube(size=[boardW, boardL, boardH]);
-                
-                for(i = mountingHoles){
-                    translate([i[0], i[1], -0.1]){
-                        cylinder(r=mountingHoleID/2, h=boardH+0.2);
-                    }
-                }
-            }
-        }
-    }
+module _bottom(){
+    FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, "bottom");
+}
 
-    if(!boardOnly){       
-        //top
-        color("GREY", 0.5){
-            translate([0, 0, boardBottom + boardH]){
-                cube(size=[boardW, boardL, boardTop]);
+module bottom(){
+    translate([bottomX, bottomY, bottomZ]){
+        union(){
+            translate([boardX, boardY, boardZ-enclosureMargin]){
+                standoffs();
             }
+
+            _bottom();
         }
     }
 }
 
-module enclosure_bottom(){
-
-    //cubeX(size=[], radius=);
-
+module standoffs(){
+    for(i = standoffs){
+        Standoff(i[0], i[1], 0, standoffH, i[2]);
+    } 
 }
 
-/*module standoff(height, ID, OD){    //build a single standoff
-   translate([0, 0,height/2]){
-       difference(){
-            cube(size=[OD, OD, height], center=true);
-            cylinder(r=ID/2, h=height, center=true);
-        }
-    }
-}*/
+module _top(){
+    FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, "top");
+}
 
-board();
+module top(){
+    translate([topX, topY, topZ])
+        mirror([0, 0, 1])
+            _top();
+}
+
+//board(true);
+_top();
+//bottom();

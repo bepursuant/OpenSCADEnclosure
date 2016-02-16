@@ -1,113 +1,139 @@
 use <RoundedCube.scad>
 
-$fn = 36;			//segments for radius
+module FlatBox(length, width, height, thickness, radius, overlap, half="top"){
 
-slop = 0.3;			//spacing between moving sections
+	$fn = 128;			//segments for radius
 
-hide = 0.01;		//hide simply makes difference()d walls not show during preview
-
-lipH = 8;
+	hide = 0.01;		//for reasons, just trust me
 
 
-//main body shape
-bodyRadius = 0;
-bodyWall = 2;
-bodyL = 60;
-bodyW = 60;
-bodyH = 20 - lipH;
-bodyX = 0;
-bodyY = 0;
-bodyZ = 0;
+	//overall outside dimensions of the finished box (closed, both halves)
+	boxL = length;
+	boxW = width;
+	boxH = height;
 
-//body lip shape
-bodyLipRadius = bodyRadius - bodyWall;
-bodyLipWall = 0.8;
-bodyLipL = bodyL - (2*bodyWall);
-bodyLipW = bodyW - (2*bodyWall);
-bodyLipH = bodyH + lipH;
-bodyLipX = bodyX + bodyWall;
-bodyLipY = bodyY + bodyWall;
-bodyLipZ = bodyZ;
+	//additional build parameters
+	radius 		= radius;		//mm on Z axis corners
+	thickness 	= thickness;	//mm wall thickness
+	overlap 	= overlap;	//mm of overlap between top and bottom halves
+	half		= half;			//which half to render
 
-//body inside cavity
-bodyCavitySpacing = slop;
-bodyCavityRadius = bodyLipRadius - bodyLipWall;
-bodyCavityL = bodyLipL - (2*bodyLipWall);
-bodyCavityW = bodyLipW - (2*bodyLipWall);
-bodyCavityH = bodyLipH - bodyLipWall + hide;
-bodyCavityX = bodyLipX + bodyLipWall;
-bodyCavityY = bodyLipY + bodyLipWall;
-bodyCavityZ = bodyLipZ + bodyLipWall;
+	//******************************************
+	//shell shape
+	shellThickness = thickness;
+	shellRadius = radius;
 
+	shellL = boxL;
+	shellW = boxW;
+	shellH = (boxH/2) - overlap;
 
+	shellX = 0;
+	shellY = 0;
+	shellZ = 0;
 
-//cover shape;
-coverRadius = bodyRadius;
-coverWall = bodyWall;
-coverL = bodyL;
-coverW = bodyW;
-coverH = lipH + coverWall;
-coverX = bodyX;
-coverY = bodyY;
-coverZ = bodyH;
+	module _shell(length, width, height, thickness, radius){
 
+		//the cavity inside the box
+		shellCavityRadius = radius - thickness;
 
+		shellCavityL = length - (2*thickness);
+		shellCavityW = width - (2*thickness);
+		shellCavityH = height;
 
+		shellCavityX = thickness;
+		shellCavityY = thickness;
+		shellCavityZ = thickness;
 
+		difference(){
 
+			//shell shape
+			roundedCubeZ([length, width, height], radius);
 
-module body(){
-	difference(){
+			//shell cavity
+			translate([shellCavityX, shellCavityY, shellCavityZ])
+				roundedCubeZ([shellCavityL, shellCavityW, shellCavityH], radius=shellCavityRadius);
 
-		union(){
-			//main body shape
-			translate([bodyX, bodyY, bodyZ])
-				roundedCubeZ([bodyL, bodyW, bodyH], bodyRadius);
+		}
+	}
 
+	module shell(){
+		translate([shellX, shellY, shellZ])
+			_shell(shellL, shellW, shellH, shellThickness, shellRadius);
+	}
 
-			translate([bodyLipX, bodyLipY, bodyLipZ])
-				roundedCubeZ([bodyLipL, bodyLipW, bodyLipH], bodyLipRadius);
+	module _flange(length, width, height, thickness, radius){
+
+		//flange cavity
+		flangeCavityRadius = radius - thickness;
+
+		flangeCavityL = length - (2*thickness);
+		flangeCavityW = width - (2*thickness);
+		flangeCavityH = height;
+
+		flangeCavityX = thickness;
+		flangeCavityY = thickness;
+
+		difference(){
+			//flange shape
+			roundedCubeZ([length, width, height], radius);
+
+			//flange cavity
+			translate([flangeCavityX, flangeCavityY])
+				roundedCubeZ([flangeCavityL, flangeCavityW, flangeCavityH], radius=flangeCavityRadius);
+		}
+	}
+
+	module flange(){
+		flangeThickness = thickness/2;
+
+		if(half=="bottom"){
+			flangeRadius = shellRadius;
+
+			flangeL = boxL;
+			flangeW = boxW;
+			flangeH = overlap;
+
+			flangeX = shellX;
+			flangeY = shellY;
+			flangeZ = shellZ + shellH;
+
+			translate([flangeX, flangeY, flangeZ])
+				_flange(flangeL, flangeW, flangeH, flangeThickness, flangeRadius);
+		} else {
+			flangeRadius = shellRadius - flangeThickness;
+
+			flangeL = shellL - (2*flangeThickness);
+			flangeW = shellW - (2*flangeThickness);
+			flangeH = overlap;
+
+			flangeX = shellX + flangeThickness;
+			flangeY = shellY + flangeThickness;
+			flangeZ = shellZ + shellH;
+
+			translate([flangeX, flangeY, flangeZ])
+				_flange(flangeL, flangeW, flangeH, flangeThickness, flangeRadius);
 		}
 
-		//main cavity shape
-		translate([bodyCavityX, bodyCavityY, bodyCavityZ])
-			roundedCubeZ([bodyCavityL, bodyCavityW, bodyCavityH], radius=bodyCavityRadius);
-
 	}
-}
-
-module cover(){
 
 	difference(){
-		translate([coverX, coverY, coverZ])
-			roundedCubeZ([coverL, coverW, coverH], coverRadius);
+		union(){
+			shell();
+			flange();
+		}
 
-		translate([bodyLipX, bodyLipY, bodyLipZ])
-			roundedCubeZ([bodyLipL, bodyLipW, bodyLipH], bodyLipRadius);
+		//horizontal cut
+		translate([0,0,shellH/2]){	//TOP
+			//cube([shellL, shellW, shellH]);
+		}
+		translate([shellL/2,0,0]){ //FRONT
+			//cube([shellL, shellW, shellH]);
+		}
+
+		//vertical cut
+		translate([0,shellW/2,0]){
+			//cube([shellL, shellW, shellH]);
+		}
 	}
 
-}
-
-
-
-
-
-difference(){
-	union(){
-		body();
-		//cover();
-	}
-
-	//horizontal cut
-	translate([0,0,bodyH/2]){	//TOP
-		//cube([bodyL, bodyW, bodyH/2]);
-	}
-	translate([bodyL/4,0,0]){ //FRONT
-		//cube([bodyL, bodyW, bodyLipH + 5]);
-	}
-
-	//vertical cut
-	translate([0,bodyW/2,0]){
-		//cube([bodyL + 5, bodyW, bodyH]);
-	}
 }
