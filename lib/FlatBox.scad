@@ -87,7 +87,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 	module flange(){
 		flangeThickness = (thickness/2)-slop;
 
-		if(half=="bottom"){
+		if(half=="top"){
 			flangeRadius = shellRadius;
 
 			flangeL = boxL;
