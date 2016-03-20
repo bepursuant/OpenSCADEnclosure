@@ -1,8 +1,9 @@
 use <RoundedCube.scad>
+use <lib/NutsandBolts.scad>
 
 module FlatBox(length, width, height, thickness, radius, overlap, slop, half="top"){
 
-	$fn = 128;			//segments for radius
+	$fn = 32;			//segments for radius
 
 	hide = 0.01;		//for reasons, just trust me
 
