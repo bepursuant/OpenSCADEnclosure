@@ -1,0 +1,13 @@
+# OpenSCADEnclosure
+A customizable enclosure for rapid prototyping. Define your PCB parameters and get a custom case built to fit perfectly.
+
+##Usage Example
+The SCAD file has a basic enclosure defined in it already and should be somewhat self explanatory. More documentation will be put here at some point.
+
+##Issues
+If you encounter any issues, feel free to post them in the issue queue at https://github.com/bepursuant/OpenSCADEnclosure/issues . 
+
+##Credits
+This project was influnced by a similar project at http://www.thingiverse.com/thing:70838 . I attempted to get that project to run, but found the OOML requirement too much and decided to build a fully-SCAD version.
+
+NOTE: the lib directory contains some works that are not my own! In all cases I have attempted to preserve headers that point to the rightful owners of that respective library, but found that including them like this was easier for the project. Most of the libraries are fully custom or very highly adapted derivations of previous work.

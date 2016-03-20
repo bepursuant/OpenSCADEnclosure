@@ -2,13 +2,15 @@
 // mounting holes, and ports below to get a perfect custom 3d
 // printable enclosure. Easy peasy.
 
+$fn = 32;                   //segments for radius
+
 use <lib/PCB.scad>          //pcb model
-use <lib/CubeX.scad>        //cubes with rounded corners
+//use <lib/CubeX.scad>        //cubes with rounded corners
 use <lib/RoundedCube.scad>  //cubes with rounded edges
 use <lib/FlatBox.scad>      //enclosure with top and bottom sections
 use <lib/NutsandBolts.scad> //to model metric screws and holes for them
+//use <lib/PortsandHoles.scad>//to model ports and holes
 
-$fn = 32;			        //segments for radius
 
 slop = 0.2;			        //spacing between moving sections
 
@@ -16,9 +18,9 @@ slop = 0.2;			        //spacing between moving sections
 // ====== DEFINE THE BOARD ====== //
 boardL = 52;
 boardW = 71;
-boardH = 1.75;  //thickness of the PCB in mm
+boardH = 1.75;    //thickness of the PCB in mm
 
-boardTopH = 17;     //height of elements on top of PCB in mm
+boardTopH = 17;   //height of elements on top of PCB in mm
 boardBottomH = 2; //height of elements on the bottom of PCB in mm
 
 boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner diameter]
@@ -31,24 +33,21 @@ boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner
                      [49,   68.5,   2]];
 
 
-// ====== DEFINE THE ENCLOSURE ====== //
-//for the screw closure
-enclosureScrewType = "M4x40";
-enclosureScrewStandoffOD = _get_head_dia(enclosureScrewType) + 1;
+// ====== CONFIGURE THE ENCLOSURE ====== //
+enclosureScrewType = "M4x16";
+enclosureScrewOD = _get_head_dia(enclosureScrewType) + 1;
 
-enclosureMargin = [enclosureScrewStandoffOD, 0.5, 0.5];        //spacing between board and enclosure walls in mm
-enclosureThickness = 1.5 + slop;   //thickness of the walls and top/bottom
-enclosureRadius = 5;        //radius of the Z-axis corners
-enclosureOverlap = 1.25;    //amount of top and bottom halves that will overlap in mm
+enclosureMargin = [enclosureScrewOD, 0.5, 0.5];//[x,y,z] spacing between board and enclosure walls in mm
+enclosureThickness = 1.5 + slop;//thickness of the walls and top/bottom
+enclosureRadius = 5;            //radius of the Z-axis corners
+enclosureOverlap = 1.5;         //amount of top and bottom halves that will overlap in mm
 
-standoffs = boardMountingHoles;//defined just like the board mounting holes
-standoffH = 2 + boardBottomH;
-
-
+standoffs = boardMountingHoles; //defined just like the board mounting holes
+standoffH = boardBottomH;
 
 // ====== DO NOT MODIFY BELOW THIS LINE ====== //
 
-//position of the bottom shell during display
+//position for the bottom shell during display
 bottomX = 0;
 bottomY = 0;
 bottomZ = 0;
@@ -63,7 +62,6 @@ enclosureL = boardL + (2*enclosureMargin[0]) + (2*enclosureThickness);
 enclosureW = boardW + (2*enclosureMargin[1]) + (2*enclosureThickness);
 enclosureH = boardBottomH + boardH + boardTopH + (2*enclosureMargin[2]) + (2*enclosureThickness);
 echo(Enclosure=enclosureL,enclosureW,enclosureH);
-
 
 //position of top shell during display
 topX = bottomX;
@@ -83,66 +81,76 @@ module board(boardOnly=false){
         _board(boardOnly);      
 }
 
-module standoffs(){
+module board_standoffs(){
     //build the standoffs for the board
-    for(i = standoffs){
-        Standoff(i[0], i[1], 0, standoffH, i[2]);
+    translate([boardX, boardY, enclosureThickness]){
+
+        for(i = standoffs){
+            Standoff(i[0], i[1], 0, standoffH, i[2]);
+        }
     }
+}
+
+module enclosure_standoffs(){
+    //build the enclosure standoffs
+    r = enclosureScrewOD/2 + (enclosureThickness/2) + slop;
+
+    translate([r, r])
+        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+
+    translate([enclosureL-r, r])
+        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+
+    translate([enclosureL-r, enclosureW-r])
+        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+
+    translate([r, enclosureW-r])
+        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+}
+
+module _screws(){
+    r = enclosureScrewOD/2 + (enclosureThickness/2) + slop;
+
+    translate([r, r])
+        _one_screw();
+
+    translate([enclosureL-r, r])
+        _one_screw();
+
+    translate([enclosureL-r, enclosureW-r])
+        _one_screw();
+
+    translate([r, enclosureW-r])
+        _one_screw();
 }
 
 module screws(flip=false){
-    r = enclosureScrewStandoffOD/2 + (enclosureThickness/2) + slop;
-
-    translate([r, r])
-        _one_screw(flip);
-
-    translate([enclosureL-r, r])
-        _one_screw(flip);
-
-    translate([enclosureL-r, enclosureW-r])
-        _one_screw(flip);
-
-    translate([r, enclosureW-r])
-        _one_screw(flip);
-}
-
-module _one_screw(flip=false){
-    if(flip==false){
-        rotate([180,0,0])
-            translate([0,0,-_get_head_height(enclosureScrewType)])
-                screw(enclosureScrewType);
-    } else {
-            translate([0,0,_get_length(enclosureScrewType)])
-                screw(enclosureScrewType);
+    if(flip){
+        translate([enclosureL/2,enclosureW/2,enclosureH/2])
+            rotate([0,180,0])
+                translate([-enclosureL/2,-enclosureW/2,-enclosureH/2]){
+                    _screws();
+        }
+    }else{
+        _screws(); 
     }
 }
 
-module screw_standoffs(){
-    r = enclosureScrewStandoffOD/2 + (enclosureThickness/2) + slop;
 
-    translate([r, r])
-        cylinder(r=enclosureScrewStandoffOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
-
-    translate([enclosureL-r, r])
-        cylinder(r=enclosureScrewStandoffOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
-
-    translate([enclosureL-r, enclosureW-r])
-        cylinder(r=enclosureScrewStandoffOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
-
-    translate([r, enclosureW-r])
-        cylinder(r=enclosureScrewStandoffOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+module _one_screw(){
+    rotate([180,0,0]){
+        translate([0,0,-_get_head_height(enclosureScrewType)]){
+            screw(enclosureScrewType,thread="no");
+        }
+    }
 }
-
 
 //build the bottom shell in place at 0,0,0
 module _bottom(){
     difference(){
         union(){
-            translate([boardX, boardY, boardZ-enclosureMargin]){
-                standoffs(standoffs, standoffH);
-            }
-
-            screw_standoffs();
+            board_standoffs();
+            enclosure_standoffs();
 
             FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, slop, "bottom");
         }
@@ -160,7 +168,7 @@ module bottom(){
 module _top(){
     difference(){
         union(){
-            screw_standoffs();
+            enclosure_standoffs();
             FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, slop, "top");
         }
 
@@ -169,13 +177,15 @@ module _top(){
 }
 
 module top(){
-    translate([topX, topY, topZ])
-        mirror([0, 0, 1])
+    translate([topX, topY, topZ]){
+        mirror([0, 0, 1]){
             _top();
+        }
+    }
 }
 
 module print(){
-    _bottom();
+    bottom();
 
     topX = bottomX + enclosureL + 5;
     topY = bottomY;
@@ -186,7 +196,9 @@ module print(){
 }
 
 //board();
-//top();
+
 //bottom();
+
+//top();
 
 print();

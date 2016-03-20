@@ -1,5 +1,4 @@
 use <RoundedCube.scad>
-use <lib/NutsandBolts.scad>
 
 module FlatBox(length, width, height, thickness, radius, overlap, slop, half="top"){
 
