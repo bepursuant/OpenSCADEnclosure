@@ -35,8 +35,8 @@ module Standoff(x=0, y=0, z=0, height, ID){    //build a single standoff
    translate([x, y, z]){
        translate([0, 0,height/2]){
            difference(){
-                cylinder(r=ID, h=height, center=true);  //OD
-                cylinder(r=ID/2.2, h=height, center=true);  //ID
+                cylinder(r=(ID/2.1)+1.4, h=height, center=true);  //OD
+                cylinder(r=ID/2.1, h=height+3, center=true);  //ID
             }
         }
     }

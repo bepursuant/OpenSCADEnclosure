@@ -560,11 +560,10 @@ module nutcatch_sidecut(
 // Beware that for a diameter only certain screw lengths do actually exist!
 
 module screw(
-
 	name   = "M5x20",  // name of screw (i.e. M3x12, M4x25, ...)
 	thread =    "no")  // option wheter or not to model the thread
-                           //   -> no:      bolt has has outer thread diameter (default)
-			   //   -> modeled: actual thread in model
+                          	//   -> no:      bolt has has outer thread diameter (default)
+			   				//   -> modeled: actual thread in model
 { // -----------------------------------------------
 
 	ds = _get_screw(name);
@@ -595,7 +594,7 @@ module screw(
 	}
 
 	difference() {
-		translate([0,0,head_height/2]) cylinder(r=head_rad, h=head_height, center=true);
+		translate([0,0,head_height/2]) cylinder(r2=head_rad, r1=orad, h=head_height, center=true);
 		translate([0,0,head_height]) key_slot(k=key_width, l=key_depth);
 	}
 

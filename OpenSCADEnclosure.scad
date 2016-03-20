@@ -10,7 +10,7 @@ use <lib/NutsandBolts.scad> //to model metric screws and holes for them
 
 $fn = 32;			        //segments for radius
 
-slop = 0.3;			        //spacing between moving sections
+slop = 0.2;			        //spacing between moving sections
 
 
 // ====== DEFINE THE BOARD ====== //
@@ -18,8 +18,8 @@ boardL = 52;
 boardW = 71;
 boardH = 1.75;  //thickness of the PCB in mm
 
-boardTopH = 18;     //height of elements on top of PCB in mm
-boardBottomH = 3.5; //height of elements on the bottom of PCB in mm
+boardTopH = 17;     //height of elements on top of PCB in mm
+boardBottomH = 2; //height of elements on the bottom of PCB in mm
 
 boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner diameter]
                      [28.5, 3,      2],
@@ -33,11 +33,11 @@ boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner
 
 // ====== DEFINE THE ENCLOSURE ====== //
 //for the screw closure
-enclosureScrewType = "M4x20";
-enclosureScrewStandoffOD = _get_head_dia(enclosureScrewType) + 2;
+enclosureScrewType = "M4x40";
+enclosureScrewStandoffOD = _get_head_dia(enclosureScrewType) + 1;
 
-enclosureMargin = 2 + enclosureScrewStandoffOD;        //spacing between board and enclosure walls in mm
-enclosureThickness = 1.5;   //thickness of the walls and top/bottom
+enclosureMargin = [enclosureScrewStandoffOD, 0.5, 0.5];        //spacing between board and enclosure walls in mm
+enclosureThickness = 1.5 + slop;   //thickness of the walls and top/bottom
 enclosureRadius = 5;        //radius of the Z-axis corners
 enclosureOverlap = 1.25;    //amount of top and bottom halves that will overlap in mm
 
@@ -54,14 +54,14 @@ bottomY = 0;
 bottomZ = 0;
 
 //position of the PCB
-boardX = bottomX + enclosureThickness + enclosureMargin;
-boardY = bottomY + enclosureThickness + enclosureMargin;
-boardZ = bottomZ + enclosureThickness + enclosureMargin;
+boardX = bottomX + enclosureMargin[0] + enclosureThickness;
+boardY = bottomY + enclosureMargin[1] + enclosureThickness;
+boardZ = bottomZ + enclosureMargin[2] + enclosureThickness;
 
 //size of enclosure, based on PCB
-enclosureL = boardL + (2*enclosureMargin) + (2*enclosureThickness);
-enclosureW = boardW + (2*enclosureMargin) + (2*enclosureThickness);
-enclosureH = boardBottomH + boardH + boardTopH + (2*enclosureMargin) + (2*enclosureThickness);
+enclosureL = boardL + (2*enclosureMargin[0]) + (2*enclosureThickness);
+enclosureW = boardW + (2*enclosureMargin[1]) + (2*enclosureThickness);
+enclosureH = boardBottomH + boardH + boardTopH + (2*enclosureMargin[2]) + (2*enclosureThickness);
 echo(Enclosure=enclosureL,enclosureW,enclosureH);
 
 
@@ -107,20 +107,13 @@ module screws(flip=false){
 }
 
 module _one_screw(flip=false){
-            if(flip){
-                translate([0, 0, _get_head_height(enclosureScrewType)]){
-                    rotate([180,0,0]){
-                        screw(enclosureScrewType);
-                    }
-                }
-            }
-            else{
-                    mirror([0, 0, 1]){
-
-                translate([0, 0, -_get_head_height(enclosureScrewType)]){
-                    screw(enclosureScrewType);
-                }
-            }
+    if(flip==false){
+        rotate([180,0,0])
+            translate([0,0,-_get_head_height(enclosureScrewType)])
+                screw(enclosureScrewType);
+    } else {
+            translate([0,0,_get_length(enclosureScrewType)])
+                screw(enclosureScrewType);
     }
 }
 
@@ -192,10 +185,8 @@ module print(){
         _top();
 }
 
-//board(true);
+//board();
 //top();
 //bottom();
 
-//print();
-
-_one_screw();
+print();
