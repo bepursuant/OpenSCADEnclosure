@@ -6,7 +6,6 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 	hide = 0.01;		//for reasons, just trust me
 
-
 	//overall outside dimensions of the finished box (closed, both halves)
 	boxL = length;
 	boxW = width;
@@ -14,7 +13,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 	//additional build parameters
 	radius 		= radius;		//mm on Z axis corners
-	thickness 	= thickness;	//mm wall thickness
+	//thickness 	= thickness;	//mm wall thickness as [x,y,z]
 	overlap 	= overlap;		//mm of overlap between top and bottom halves
 	half		= half;			//which half to render
 
@@ -25,53 +24,51 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 	shellL = boxL;
 	shellW = boxW;
-	shellH = (boxH/2) - overlap;
+	shellH = (boxH-overlap)/2;
 
 	shellX = 0;
 	shellY = 0;
 	shellZ = 0;
 
-	module _shell(length, width, height, thickness, radius){
+	module shell(length, width, height, thickness, radius){
 
 		//the cavity inside the box
-		shellCavityRadius = radius - thickness;
+		shellCavityRadius = radius - ((thickness[0]+thickness[1])/2);
 
-		shellCavityL = length - (2*thickness);
-		shellCavityW = width - (2*thickness);
-		shellCavityH = height;
+		shellCavityL = length - (2*thickness[0]);
+		shellCavityW = width - (2*thickness[1]);
+		shellCavityH = height - thickness[2];
 
-		shellCavityX = thickness;
-		shellCavityY = thickness;
-		shellCavityZ = thickness;
+		shellCavityX = thickness[0];
+		shellCavityY = thickness[1];
+		shellCavityZ = thickness[2];
 
 		difference(){
-
 			//shell shape
-			roundedCubeZ([length, width, height], radius);
+			roundedCubeZ([length, width, height], radius=radius);
 
 			//shell cavity
 			translate([shellCavityX, shellCavityY, shellCavityZ])
 				roundedCubeZ([shellCavityL, shellCavityW, shellCavityH], radius=shellCavityRadius);
-
 		}
 	}
 
 	module shell(){
 		translate([shellX, shellY, shellZ])
-			_shell(shellL, shellW, shellH, shellThickness, shellRadius);
+			_shell(shellL, shellW, shellH, thickness, shellRadius);
 	}
 
 	module _flange(length, width, height, thickness, radius){
 
 		//flange cavity
-		flangeCavityRadius = radius - thickness;
+		flangeCavityRadius = radius - ((thickness[0]+thickness[1])/2);
 
-		flangeCavityL = length - (2*thickness);
-		flangeCavityW = width - (2*thickness);
+		flangeCavityL = length - (2*thickness[0]);
+		flangeCavityW = width - (2*thickness[1]);
 		flangeCavityH = height;
 
-		flangeCavityX = thickness;
-		flangeCavityY = thickness;
+		flangeCavityX = thickness[0];
+		flangeCavityY = thickness[1];
 
 		difference(){
 			//flange shape
@@ -84,7 +81,8 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 	}
 
 	module flange(){
-		flangeThickness = (thickness/2)-slop;
+
+		flangeThickness = overlap;
 
 		if(half=="top"){
 			flangeRadius = shellRadius;
@@ -99,15 +97,16 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 			translate([flangeX, flangeY, flangeZ])
 				_flange(flangeL, flangeW, flangeH, flangeThickness, flangeRadius);
-		} else {
-			flangeRadius = shellRadius - flangeThickness - (2*slop);
 
-			flangeL = shellL - (2*flangeThickness) - (4*slop);
-			flangeW = shellW - (2*flangeThickness) - (4*slop);
+		} else {
+			flangeRadius = shellRadius - ((flangeThickness[0]+flangeThickness[1])/2) - slop;
+
+			flangeL = shellL - (2*flangeThickness[0]) - (2*slop);
+			flangeW = shellW - (2*flangeThickness[1]) - (2*slop);
 			flangeH = overlap;
 
-			flangeX = shellX + flangeThickness + (2*slop);
-			flangeY = shellY + flangeThickness + (2*slop);
+			flangeX = shellX + flangeThickness[0] + slop;
+			flangeY = shellY + flangeThickness[1] + slop;
 			flangeZ = shellZ + shellH;
 
 			translate([flangeX, flangeY, flangeZ])
@@ -132,7 +131,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 		//vertical cut
 		translate([0,shellW/2,0]){
-			//cube([shellL, shellW, shellH]);
+			cube([shellL, shellW, shellH]);
 		}
 	}
 

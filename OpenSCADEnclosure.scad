@@ -35,7 +35,7 @@ enclosureScrewType = "M4x16";
 enclosureScrewOD = _get_head_dia(enclosureScrewType) + 1;
 
 enclosureMargin = [enclosureScrewOD, 0.5, 0.5];//[x,y,z] spacing between board and enclosure walls in mm
-enclosureThickness = 1.5 + slop;//thickness of the walls and top/bottom
+enclosureThickness = [1.5+slop, 1.5+slop, 1.5+slop];//[x,y,z] thickness of walls
 enclosureRadius = 5;            //radius of the Z-axis corners
 enclosureOverlap = 1.5;         //amount of top and bottom halves that will overlap in mm
 
@@ -53,14 +53,14 @@ bottomY = 0;
 bottomZ = 0;
 
 //position of the PCB
-boardX = bottomX + enclosureMargin[0] + enclosureThickness;
-boardY = bottomY + enclosureMargin[1] + enclosureThickness;
-boardZ = bottomZ + enclosureMargin[2] + enclosureThickness;
+boardX = bottomX + enclosureMargin[0] + enclosureThickness[0];
+boardY = bottomY + enclosureMargin[1] + enclosureThickness[1];
+boardZ = bottomZ + enclosureMargin[2] + enclosureThickness[2];
 
 //size of enclosure, based on PCB
-enclosureL = boardL + (2*enclosureMargin[0]) + (2*enclosureThickness);
-enclosureW = boardW + (2*enclosureMargin[1]) + (2*enclosureThickness);
-enclosureH = boardBottomH + boardH + boardTopH + (2*enclosureMargin[2]) + (2*enclosureThickness);
+enclosureL = boardL + (2*enclosureMargin[0]) + (2*enclosureThickness[0]);
+enclosureW = boardW + (2*enclosureMargin[1]) + (2*enclosureThickness[1]);
+enclosureH = boardBottomH + boardH + boardTopH + (2*enclosureMargin[2]) + (2*enclosureThickness[2]);
 echo(Enclosure=enclosureL,enclosureW,enclosureH);
 
 //position of top shell during display
@@ -83,7 +83,7 @@ module board(boardOnly=false){
 
 module board_standoffs(){
     //build the standoffs for the board
-    translate([boardX, boardY, enclosureThickness]){
+    translate([boardX, boardY, enclosureThickness[2]]){
 
         for(i = standoffs){
             Standoff(i[0], i[1], 0, standoffH, i[2]);
@@ -93,7 +93,7 @@ module board_standoffs(){
 
 module enclosure_standoffs(half="top"){
     //build the enclosure standoffs
-    r = enclosureScrewOD/2 + (enclosureThickness/2) + slop;
+    r = enclosureScrewOD/2 + (enclosureThickness[2]/2) + slop;
 
     if(half=="top"){
         translate([r, r])
@@ -121,7 +121,7 @@ module enclosure_standoffs(half="top"){
 }
 
 module _screws(){
-    r = enclosureScrewOD/2 + (enclosureThickness/2) + slop;
+    r = enclosureScrewOD/2 + (enclosureThickness[0]/2) + slop;
 
     translate([r, r])
         _one_screw();
@@ -211,6 +211,6 @@ module print(){
 
 //bottom();
 
-_top();
+//_top();
 
-//print();
+print();
