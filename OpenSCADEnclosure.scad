@@ -11,9 +11,7 @@ use <lib/FlatBox.scad>      //enclosure with top and bottom sections
 use <lib/NutsandBolts.scad> //to model metric screws and holes for them
 //use <lib/PortsandHoles.scad>//to model ports and holes
 
-
 slop = 0.2;			        //spacing between moving sections
-
 
 // ====== DEFINE THE BOARD ====== //
 boardL = 52;
@@ -21,7 +19,7 @@ boardW = 71;
 boardH = 1.75;    //thickness of the PCB in mm
 
 boardTopH = 17;   //height of elements on top of PCB in mm
-boardBottomH = 2; //height of elements on the bottom of PCB in mm
+boardBottomH = 2.5; //height of elements on the bottom of PCB in mm
 
 boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner diameter]
                      [28.5, 3,      2],
@@ -31,7 +29,6 @@ boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner
                      [28.5, 67,     2],
                      [35.5, 68.5,   2],
                      [49,   68.5,   2]];
-
 
 // ====== CONFIGURE THE ENCLOSURE ====== //
 enclosureScrewType = "M4x16";
@@ -45,7 +42,10 @@ enclosureOverlap = 1.5;         //amount of top and bottom halves that will over
 standoffs = boardMountingHoles; //defined just like the board mounting holes
 standoffH = boardBottomH;
 
+
+// =========================================== //
 // ====== DO NOT MODIFY BELOW THIS LINE ====== //
+// =========================================== //
 
 //position for the bottom shell during display
 bottomX = 0;
@@ -91,21 +91,33 @@ module board_standoffs(){
     }
 }
 
-module enclosure_standoffs(){
+module enclosure_standoffs(half="top"){
     //build the enclosure standoffs
     r = enclosureScrewOD/2 + (enclosureThickness/2) + slop;
 
-    translate([r, r])
-        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+    if(half=="top"){
+        translate([r, r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+        translate([r, enclosureW-r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+        translate([enclosureL-r, r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+        translate([enclosureL-r, enclosureW-r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+    }else{
+        translate([r, r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+        translate([r, enclosureW-r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+        translate([enclosureL-r, r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+        translate([enclosureL-r, enclosureW-r])
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+    }
 
-    translate([enclosureL-r, r])
-        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
 
-    translate([enclosureL-r, enclosureW-r])
-        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
 
-    translate([r, enclosureW-r])
-        cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+
 }
 
 module _screws(){
@@ -149,12 +161,12 @@ module _one_screw(){
 module _bottom(){
     difference(){
         union(){
-            board_standoffs();
-            enclosure_standoffs();
+            board_standoffs("bottom");
+            enclosure_standoffs("bottom");
 
             FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, slop, "bottom");
         }
-        screws();
+        screws(true);
     }
 }
 
@@ -168,11 +180,11 @@ module bottom(){
 module _top(){
     difference(){
         union(){
-            enclosure_standoffs();
+            enclosure_standoffs("top");
             FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, slop, "top");
         }
 
-        screws(true);
+        screws();
     }
 }
 
@@ -199,6 +211,6 @@ module print(){
 
 //bottom();
 
-//top();
+_top();
 
-print();
+//print();

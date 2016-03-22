@@ -594,7 +594,7 @@ module screw(
 	}
 
 	difference() {
-		translate([0,0,head_height/2]) cylinder(r2=head_rad, r1=orad, h=head_height, center=true);
+		translate([0,0,head_height/2]) cylinder(r=head_rad, h=head_height, center=true);
 		translate([0,0,head_height]) key_slot(k=key_width, l=key_depth);
 	}
 
