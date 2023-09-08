@@ -25,9 +25,9 @@ module createMeniscus(height, radius){
 module _roundedCube(x, y, z, r) {
 
 	difference(){
-		translate(){
+		//translate(){
 			cube([x, y, z]);
-		}
+		//}
 
 		translate([x - r, 0 + r, 0]){
 			rotate(270){

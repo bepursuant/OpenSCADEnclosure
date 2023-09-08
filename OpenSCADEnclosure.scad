@@ -97,22 +97,22 @@ module enclosure_standoffs(half="top"){
 
     if(half=="top"){
         translate([r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
         translate([r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
         translate([enclosureL-r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
         translate([enclosureL-r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap, centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
     }else{
         translate([r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
         translate([r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
         translate([enclosureL-r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
         translate([enclosureL-r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2), centered=true);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
     }
 
 
@@ -161,8 +161,8 @@ module _one_screw(){
 module _bottom(){
     difference(){
         union(){
-            board_standoffs("bottom");
-            enclosure_standoffs("bottom");
+            board_standoffs();
+            enclosure_standoffs(half="bottom");
 
             FlatBox(enclosureL, enclosureW, enclosureH, enclosureThickness, enclosureRadius, enclosureOverlap, slop, "bottom");
         }

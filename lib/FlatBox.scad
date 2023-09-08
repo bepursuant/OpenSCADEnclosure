@@ -30,7 +30,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 	shellY = 0;
 	shellZ = 0;
 
-	module shell(length, width, height, thickness, radius){
+	module _shell(length, width, height, thickness, radius){
 
 		//the cavity inside the box
 		shellCavityRadius = radius - ((thickness[0]+thickness[1])/2);
@@ -82,7 +82,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 	module flange(){
 
-		flangeThickness = overlap;
+		flangeThickness= [overlap, overlap];
 
 		if(half=="top"){
 			flangeRadius = shellRadius;
@@ -131,7 +131,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 		//vertical cut
 		translate([0,shellW/2,0]){
-			cube([shellL, shellW, shellH]);
+			//cube([shellL, shellW, shellH]);
 		}
 	}
 
