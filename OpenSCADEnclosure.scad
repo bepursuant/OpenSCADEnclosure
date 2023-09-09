@@ -14,30 +14,28 @@ use <lib/NutsandBolts.scad> //to model metric screws and holes for them
 slop = 0.2;			        //spacing between moving sections
 
 // ====== DEFINE THE BOARD ====== //
-boardL = 52;
-boardW = 71;
-boardH = 1.75;    //thickness of the PCB in mm
+boardL = 100;
+boardW = 30;
+boardH = 10;    //thickness of the PCB in mm
 
-boardTopH = 17;   //height of elements on top of PCB in mm
-boardBottomH = 2.5; //height of elements on the bottom of PCB in mm
+boardTopH = 4;   //height of elements on top of PCB in mm
+boardBottomH = 4; //height of elements on the bottom of PCB in mm
 
-boardMountingHoles =[[3,    3,      2],  //[mm along board, mm into board, inner diameter]
-                     [28.5, 3,      2],
-                     [35.5, 1.5,    2],
-                     [49,   1.5,    2],
-                     [3,    67,     2],    //top row
-                     [28.5, 67,     2],
-                     [35.5, 68.5,   2],
-                     [49,   68.5,   2]];
+boardMountingHoles = [ //[mm along board, mm into board, inner diameter]
+    [24, 2,  2.5],
+    [24, 12, 2.5],
+    [47, 2,  2.5],
+    [47, 12, 2.5],
+];
 
 // ====== CONFIGURE THE ENCLOSURE ====== //
 enclosureScrewType = "M4x16";
 enclosureScrewOD = _get_head_dia(enclosureScrewType) + 1;
 
 enclosureMargin = [enclosureScrewOD, 0.5, 0.5];//[x,y,z] spacing between board and enclosure walls in mm
-enclosureThickness = [1.5+slop, 1.5+slop, 1.5+slop];//[x,y,z] thickness of walls
-enclosureRadius = 5;            //radius of the Z-axis corners
-enclosureOverlap = 1.5;         //amount of top and bottom halves that will overlap in mm
+enclosureThickness = [2.5+slop, 2.5+slop, 2.5+slop];//[x,y,z] thickness of walls
+enclosureRadius = 4;            //radius of the Z-axis corners
+enclosureOverlap = 2;         //amount of top and bottom halves that will overlap in mm
 
 standoffs = boardMountingHoles; //defined just like the board mounting holes
 standoffH = boardBottomH;
@@ -97,22 +95,22 @@ module enclosure_standoffs(half="top"){
 
     if(half=="top"){
         translate([r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH-enclosureOverlap)/2);
         translate([r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH-enclosureOverlap)/2);
         translate([enclosureL-r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH-enclosureOverlap)/2);
         translate([enclosureL-r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2)-enclosureOverlap);
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH-enclosureOverlap)/2);
     }else{
         translate([r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH+enclosureOverlap)/2);
         translate([r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH+enclosureOverlap)/2);
         translate([enclosureL-r, r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH+enclosureOverlap)/2);
         translate([enclosureL-r, enclosureW-r])
-            cylinder(r=enclosureScrewOD/2, h=(enclosureH/2));
+            cylinder(r=enclosureScrewOD/2, h=(enclosureH+enclosureOverlap)/2);
     }
 
 
@@ -199,8 +197,8 @@ module top(){
 module print(){
     bottom();
 
-    topX = bottomX + enclosureL + 5;
-    topY = bottomY;
+    topX = bottomX;
+    topY = bottomY + enclosureW + 3;
     topZ = bottomZ;
 
     translate([topX, topY, topZ])

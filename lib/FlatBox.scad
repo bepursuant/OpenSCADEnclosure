@@ -1,5 +1,7 @@
 use <RoundedCube.scad>
 
+
+
 module FlatBox(length, width, height, thickness, radius, overlap, slop, half="top"){
 
 	$fn = 32;			//segments for radius
@@ -12,10 +14,10 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 	boxH = height;
 
 	//additional build parameters
-	radius 		= radius;		//mm on Z axis corners
+	//radius 		= radius;		//mm on Z axis corners
 	//thickness 	= thickness;	//mm wall thickness as [x,y,z]
-	overlap 	= overlap;		//mm of overlap between top and bottom halves
-	half		= half;			//which half to render
+	//overlap 	= overlap;		//mm of overlap between top and bottom halves
+	//half		= half;			//which half to render
 
 	//******************************************
 	//shell shape
@@ -82,7 +84,7 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 
 	module flange(){
 
-		flangeThickness= [overlap, overlap];
+		flangeThickness = [(thickness[0]-slop)/2, (thickness[1]-slop)/2];
 
 		if(half=="top"){
 			flangeRadius = shellRadius;
@@ -105,8 +107,8 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 			flangeW = shellW - (2*flangeThickness[1]) - (2*slop);
 			flangeH = overlap;
 
-			flangeX = shellX + flangeThickness[0] + slop;
-			flangeY = shellY + flangeThickness[1] + slop;
+			flangeX = shellX + flangeThickness[0] + (slop);
+			flangeY = shellY + flangeThickness[1] + (slop);
 			flangeZ = shellZ + shellH;
 
 			translate([flangeX, flangeY, flangeZ])
@@ -136,3 +138,5 @@ module FlatBox(length, width, height, thickness, radius, overlap, slop, half="to
 	}
 
 }
+
+//FlatBox(10, 10, 10, [1,1,1] , 2, 1, 0.1, "top");
