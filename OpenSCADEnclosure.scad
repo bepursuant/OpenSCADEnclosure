@@ -2,24 +2,24 @@
 // mounting holes, and ports below to get a perfect custom 3d
 // printable enclosure. Easy peasy.
 
-$fn = 32;                   //segments for radius
+$fn = 32;                       //segments for radius
 
-use <lib/PCB.scad>          //pcb model
-//use <lib/CubeX.scad>        //cubes with rounded corners
-use <lib/RoundedCube.scad>  //cubes with rounded edges
-use <lib/FlatBox.scad>      //enclosure with top and bottom sections
-use <lib/NutsandBolts.scad> //to model metric screws and holes for them
-//use <lib/PortsandHoles.scad>//to model ports and holes
+use <lib/PCB.scad>              //pcb model
+//use <lib/CubeX.scad>          //cubes with rounded corners
+use <lib/RoundedCube.scad>      //cubes with rounded edges
+use <lib/FlatBox.scad>          //enclosure with top and bottom sections
+use <lib/NutsandBolts.scad>     //to model metric screws and holes for them
+//use <lib/PortsandHoles.scad>  //to model ports and holes
 
-slop = 0.2;			        //spacing between moving sections
+slop = 0.2;			            //spacing between moving sections
 
 // ====== DEFINE THE BOARD ====== //
 boardL = 100;
 boardW = 30;
-boardH = 10;    //thickness of the PCB in mm
+boardH = 10;        //thickness of the PCB in mm
 
-boardTopH = 4;   //height of elements on top of PCB in mm
-boardBottomH = 4; //height of elements on the bottom of PCB in mm
+boardTopH = 4;      //height of elements on top of PCB in mm
+boardBottomH = 4;   //height of elements on the bottom of PCB in mm
 
 boardMountingHoles = [ //[mm along board, mm into board, inner diameter]
     [24, 2,  2.5],
@@ -32,10 +32,10 @@ boardMountingHoles = [ //[mm along board, mm into board, inner diameter]
 enclosureScrewType = "M4x16";
 enclosureScrewOD = _get_head_dia(enclosureScrewType) + 1;
 
-enclosureMargin = [enclosureScrewOD, 0.5, 0.5];//[x,y,z] spacing between board and enclosure walls in mm
-enclosureThickness = [2.5+slop, 2.5+slop, 2.5+slop];//[x,y,z] thickness of walls
-enclosureRadius = 4;            //radius of the Z-axis corners
-enclosureOverlap = 2;         //amount of top and bottom halves that will overlap in mm
+enclosureMargin = [enclosureScrewOD, 0.5, 0.5]; //[x,y,z] spacing between board and enclosure walls in mm
+enclosureThickness = [2.5, 2.5, 2.5];           //[x,y,z] thickness of walls
+enclosureRadius = 4;                            //radius of the Z-axis corners
+enclosureOverlap = 2;                           //amount of top and bottom halves that will overlap in mm
 
 standoffs = boardMountingHoles; //defined just like the board mounting holes
 standoffH = boardBottomH;
@@ -59,7 +59,6 @@ boardZ = bottomZ + enclosureMargin[2] + enclosureThickness[2];
 enclosureL = boardL + (2*enclosureMargin[0]) + (2*enclosureThickness[0]);
 enclosureW = boardW + (2*enclosureMargin[1]) + (2*enclosureThickness[1]);
 enclosureH = boardBottomH + boardH + boardTopH + (2*enclosureMargin[2]) + (2*enclosureThickness[2]);
-echo(Enclosure=enclosureL,enclosureW,enclosureH);
 
 //position of top shell during display
 topX = bottomX;
@@ -91,7 +90,7 @@ module board_standoffs(){
 
 module enclosure_standoffs(half="top"){
     //build the enclosure standoffs
-    r = enclosureScrewOD/2 + (enclosureThickness[2]/2) + slop;
+    r = enclosureScrewOD/2 + (enclosureThickness[2]/2);
 
     if(half=="top"){
         translate([r, r])
